@@ -64,7 +64,7 @@ pub mod todo_list {
 
         /// Update one todo item according the given description
         pub fn update_todo_item_description(&mut self, todo_description: String) -> Option<bool> {
-            match self.list.get_mut(&todo_description) {
+            match self.list.get_mut(&todo_description.to_ascii_lowercase()) {
                 Some(v) => {
                     v.update();
                     Some(v.is_done())
@@ -87,13 +87,25 @@ pub mod todo_list {
         /// Insert a new item into our Todo_list.
         /// We will consider we pass false as value
         pub fn insert(&mut self, todo_description: String) -> bool {
-            let todo_item = TodoItem::build(self.next_id, todo_description.to_string());
-            if self.list.get(&todo_description).is_none() {
+            let todo_item = TodoItem::build(self.next_id, todo_description.to_ascii_lowercase());
+            if self
+                .list
+                .get(&todo_description.to_ascii_lowercase())
+                .is_none()
+            {
                 self.next_id += 1;
-                self.list.insert(todo_description, todo_item);
+                self.list
+                    .insert(todo_description.to_ascii_lowercase(), todo_item);
                 return true;
             }
             false
+        }
+
+        /// Remove a item from our Todo_list.
+        pub fn remove(&mut self, todo_description: String) -> bool {
+            self.list
+                .remove(&todo_description.to_ascii_lowercase())
+                .is_some()
         }
 
         /// Return all the struct in json  pretty
@@ -207,6 +219,16 @@ pub mod todo_list {
             }
         }
 
+        ///Action responsible for removing an item according to an description
+        pub fn remove(todo: &mut TodoList, item: String) {
+            let b = todo.remove(String::from(&item));
+            if b {
+                println!("Todo item removed!")
+            } else {
+                println!("There is no item with the given description: {} !", item)
+            }
+        }
+
         ///Action responsible for update an item according to an id or a description
         pub fn update(todo: &mut TodoList, item: String) {
             use std::num::ParseIntError;
@@ -285,12 +307,15 @@ pub mod todo_list {
 
             if action == "add" {
                 add(&mut todo, item);
+            } else if action == "remove" {
+                remove(&mut todo, String::from(&item));
             } else if action == "update" {
                 update(&mut todo, String::from(&item));
             } else if action == "show" {
                 print_json_pretty(&todo)
             } else {
                 changes = false;
+                println!("The given command: {} is invalid!", action);
             }
 
             if changes {

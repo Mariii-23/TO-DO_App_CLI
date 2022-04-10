@@ -1,0 +1,27 @@
+#+TITLE: TO-DO LIST
+
+This is a simple TO-DO List app that will run only in the terminal.
+
+We can store the values as a ~csv~ or a ~json~ file.
+
+* Comands
++ Show all TODO items ::
+ #+begin_src bash
+ > cargo run show
+ #+end_src
+
++ Add a TODO item ::
+ #+begin_src bash
+ > cargo run add "Add Help Page"
+ #+end_src
+
++ Update a TODO item ::
+ #+begin_src bash
+ > cargo run update "add help page"
+ #+end_src
+
+ or
+
+ #+begin_src bash
+ > cargo run update 2
+ #+end_src

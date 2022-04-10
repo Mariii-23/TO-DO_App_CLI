@@ -44,6 +44,15 @@ pub mod todo_list {
         pub fn elem_in_csv(&mut self) -> String {
             format!("{},{},{}", self.id, self.description, self.done)
         }
+
+        /// Clone
+        pub fn clone(&self) -> TodoItem {
+            TodoItem {
+                id: self.id,
+                description: String::from(&self.description),
+                done: self.done,
+            }
+        }
     }
 
     #[derive(Serialize, Deserialize, Debug)]
@@ -54,12 +63,30 @@ pub mod todo_list {
 
     impl TodoList {
         /// Build a empty TodoList
-        /// The id is always start with 1
+        /// The id is always start with 0
         pub fn build() -> TodoList {
             TodoList {
                 list: HashMap::new(),
                 next_id: 0,
             }
+        }
+
+        /// Get todo item by description
+        pub fn get_item_by_description(&self, todo_description: String) -> Option<TodoItem> {
+            match self.list.get(&todo_description) {
+                Some(value) => Some(value.clone()),
+                None => None,
+            }
+        }
+
+        /// Get todo item by id
+        pub fn get_item_by_id(&self, todo_id: u32) -> Option<TodoItem> {
+            for elem in self.list.values() {
+                if elem.id == todo_id {
+                    return Some(elem.clone());
+                }
+            }
+            None
         }
 
         /// Update one todo item according the given description
@@ -101,11 +128,24 @@ pub mod todo_list {
             false
         }
 
-        /// Remove a item from our Todo_list.
-        pub fn remove(&mut self, todo_description: String) -> bool {
-            self.list
-                .remove(&todo_description.to_ascii_lowercase())
-                .is_some()
+        /// Remove a item from our Todo_list by description
+        pub fn remove_by_description(&mut self, todo_description: String) -> Option<TodoItem> {
+            self.list.remove(&todo_description.to_ascii_lowercase())
+        }
+
+        /// Remove a item from our Todo_list by id
+        pub fn remove_by_id(&mut self, id: u32) -> Option<TodoItem> {
+            let mut index: Option<String> = None;
+            for (description, elem) in self.list.iter_mut() {
+                if elem.id == id {
+                    index = Some(String::from(description))
+                }
+            }
+
+            if index.is_some() {
+                return self.list.remove(&index.unwrap());
+            }
+            None
         }
 
         /// Return all the struct in json  pretty
@@ -221,11 +261,33 @@ pub mod todo_list {
 
         ///Action responsible for removing an item according to an description
         pub fn remove(todo: &mut TodoList, item: String) {
-            let b = todo.remove(String::from(&item));
-            if b {
-                println!("Todo item removed!")
-            } else {
-                println!("There is no item with the given description: {} !", item)
+            use std::num::ParseIntError;
+            let number_id: Result<u32, ParseIntError> = String::from(&item).trim().parse();
+            match number_id {
+                Ok(id) => {
+                    let result = todo.remove_by_id(id);
+                    match result {
+                        Some(value) => {
+                            println!(
+                                "Todo item deleted with success! -> {} : {}",
+                                id, value.description
+                            )
+                        }
+                        None => println!("There is no item with the given id: {} !", id),
+                    }
+                }
+                Err(_) => {
+                    let result = todo.remove_by_description(String::from(&item));
+                    match result {
+                        Some(value) => {
+                            println!(
+                                "Todo item deleted with success! -> {} : {}",
+                                value.id, value.description
+                            )
+                        }
+                        None => println!("There is no item with the given description: {} !", item),
+                    }
+                }
             }
         }
 

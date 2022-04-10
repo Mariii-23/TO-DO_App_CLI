@@ -18,15 +18,12 @@ We can store the values as a ~csv~ or a ~json~ file.
 + Remove a TODO item ::
  #+begin_src bash
  > cargo run remove "add help page"
+ > cargo run remove 0
  #+end_src
+
 
 + Update a TODO item ::
  #+begin_src bash
  > cargo run update "add help page"
- #+end_src
-
- or
-
- #+begin_src bash
  > cargo run update 2
  #+end_src

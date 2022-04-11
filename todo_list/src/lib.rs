@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use std::{
-    collections::HashMap,
+    collections::{hash_map::Entry, HashMap},
     fs::write,
     io::{BufReader, Read},
 };
@@ -77,18 +77,18 @@ impl TodoList {
     }
 
     /// Get todo item by description
-    pub fn get_item_by_description(&self, todo_description: String) -> Option<TodoItem> {
+    pub fn get_item_by_description(&self, todo_description: String) -> Option<&TodoItem> {
         match self.list.get(&todo_description) {
-            Some(value) => Some(value.clone()),
+            Some(value) => Some(&value),
             None => None,
         }
     }
 
     /// Get todo item by id
-    pub fn get_item_by_id(&self, todo_id: u32) -> Option<TodoItem> {
+    pub fn get_item_by_id(&self, todo_id: u32) -> Option<&TodoItem> {
         for elem in self.list.values() {
             if elem.id == todo_id {
-                return Some(elem.clone());
+                return Some(&elem);
             }
         }
         None
@@ -119,18 +119,16 @@ impl TodoList {
     /// Insert a new item into our Todo_list.
     /// We will consider we pass false as value
     pub fn insert(&mut self, todo_description: String) -> bool {
-        let todo_item = TodoItem::build(self.next_id, todo_description.to_ascii_lowercase());
-        if self
-            .list
-            .get(&todo_description.to_ascii_lowercase())
-            .is_none()
-        {
-            self.next_id += 1;
-            self.list
-                .insert(todo_description.to_ascii_lowercase(), todo_item);
-            return true;
+        match self.list.entry(todo_description.to_ascii_lowercase()) {
+            Entry::Vacant(elem) => {
+                let todo_item =
+                    TodoItem::build(self.next_id, todo_description.to_ascii_lowercase());
+                elem.insert(todo_item);
+                self.next_id += 1;
+                true
+            }
+            Entry::Occupied(_) => false,
         }
-        false
     }
 
     /// Remove a item from our Todo_list by description
@@ -198,13 +196,12 @@ impl TodoList {
     pub fn save_csv(&mut self, filename: &str) -> Result<(), std::io::Error> {
         let mut content = String::new();
 
-        // TODO Add header to file
-        // content.push_str(&format!("{}\n", TodoItem::header_of_csv()));
+        content.push_str(&format!("{}\n", TodoItem::header_of_csv()));
         for value in self.list.values_mut() {
             let record = format!("{}\n", value.elem_in_csv());
             content.push_str(&record);
         }
-        std::fs::write(filename, content)
+        std::fs::write(format!("{}.csv", filename), content)
     }
 
     /// Read the default file, and return the all struct
@@ -215,16 +212,15 @@ impl TodoList {
             .write(true)
             .create(true)
             .read(true)
-            .open(format!("{}.csv", &filename))?;
+            .open(format!("{}.csv", filename))?;
 
         let mut id_max = 0;
         let mut content = String::new();
 
         f.read_to_string(&mut content)?;
-        //TODO Remove first line (header) from file
-        // content.remove(format!("{}\n", TodoItem::header_of_csv()));
         let map: HashMap<String, TodoItem> = content
             .lines()
+            .skip(1)
             .map(|line| line.splitn(3, ',').collect::<Vec<&str>>())
             .map(|v| (v[0], v[1], v[2]))
             .map(|(id, description, done)| {

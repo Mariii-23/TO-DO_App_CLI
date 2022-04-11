@@ -74,6 +74,7 @@ pub fn update(todo: &mut TodoList, item: String) {
 
 ///Action responsible to save the TodoList to a file
 pub fn save(todo: &mut TodoList, filename: &str) {
+    // match todo.save_csv(filename) {
     match todo.save_json(filename) {
         Ok(_) => {}
         Err(why) => println!("An error occurred: {}", why),
@@ -82,6 +83,7 @@ pub fn save(todo: &mut TodoList, filename: &str) {
 
 ///Action responsible to read the TodoList to a file
 pub fn read(filename: &str) -> TodoList {
+    // TodoList::read_csv(filename).expect("Initialisation of db failed")
     TodoList::read_json(filename).expect("Initialisation of db failed")
 }
 

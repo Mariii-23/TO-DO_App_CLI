@@ -78,6 +78,13 @@ dependencies = [
 name = "todo-cli"
 version = "0.1.0"
 dependencies = [
+ "todo_list",
+]
+
+[[package]]
+name = "todo_list"
+version = "0.1.0"
+dependencies = [
  "serde",
  "serde_json",
 ]

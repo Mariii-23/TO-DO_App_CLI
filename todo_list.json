@@ -1,0 +1,15 @@
+{
+  "list": {
+    "batatasasdfasdf": {
+      "id": 1,
+      "description": "batatasasdfasdf",
+      "done": false
+    },
+    "batatas": {
+      "id": 0,
+      "description": "batatas",
+      "done": false
+    }
+  },
+  "next_id": 2
+}

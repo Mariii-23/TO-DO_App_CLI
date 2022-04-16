@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::{hash_map::Entry, HashMap},
     fs::write,
-    io::{BufReader, Read},
+    io::{BufReader, ErrorKind, Read},
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -168,21 +168,25 @@ impl TodoList {
     pub fn read_json(filename: &str) -> Result<TodoList, std::io::Error> {
         let f = std::fs::OpenOptions::new()
             .write(true)
-            .create(true)
             .read(true)
-            .open(format!("{}.json", &filename))?;
+            .open(format!("{}.json", &filename));
+
+        if f.is_err() {
+            return Err(f.err().unwrap());
+        }
+
+        let f = f.unwrap();
 
         let buf_reader = BufReader::new(f);
 
-        let todo_list: TodoList = match serde_json::from_reader(buf_reader) {
-            Ok(todo_list) => todo_list,
-            Err(err) => {
-                println!("\nError reading json file {}.json :\n {}", filename, err);
-                TodoList::build()
-            }
-        };
+        let result = serde_json::from_reader(buf_reader);
 
-        Ok(todo_list)
+        if result.is_err() {
+            let error = std::io::Error::new(ErrorKind::Other, "Error reading / opening file");
+            Err(error)
+        } else {
+            Ok(result.unwrap())
+        }
     }
 
     /// Save all the struct in a json file

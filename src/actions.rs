@@ -84,7 +84,13 @@ pub fn save(todo: &mut TodoList, filename: &str) {
 ///Action responsible to read the TodoList to a file
 pub fn read(filename: &str) -> TodoList {
     // TodoList::read_csv(filename).expect("Initialisation of db failed")
-    TodoList::read_json(filename).expect("Initialisation of db failed")
+    let result = TodoList::read_json(filename);
+
+    if result.is_ok() {
+        result.unwrap()
+    } else {
+        TodoList::build()
+    }
 }
 
 ///Action responsible to given all the TodoList

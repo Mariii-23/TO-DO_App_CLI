@@ -182,7 +182,11 @@ impl TodoList {
         let result = serde_json::from_reader(buf_reader);
 
         if result.is_err() {
-            let error = std::io::Error::new(ErrorKind::Other, "Error reading / opening file");
+            let phrase = format!(
+                "Error reading / opening file ::: {}",
+                result.err().unwrap().to_string()
+            );
+            let error = std::io::Error::new(ErrorKind::Other, phrase);
             Err(error)
         } else {
             Ok(result.unwrap())

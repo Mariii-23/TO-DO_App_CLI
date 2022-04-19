@@ -46,7 +46,7 @@ impl TodoItem {
     }
 
     /// Convert a TodoItem to a line of a csv
-    pub fn elem_in_csv(&mut self) -> String {
+    pub fn elem_in_csv(&self) -> String {
         format!("{},{},{}", self.id, self.description, self.done)
     }
 
@@ -194,18 +194,18 @@ impl TodoList {
     }
 
     /// Save all the struct in a json file
-    pub fn save_json(&mut self, filename: &str) -> Result<(), std::io::Error> {
+    pub fn save_json(&self, filename: &str) -> Result<(), std::io::Error> {
         let path = format!("{}.json", filename);
         let todo_list_json = serde_json::to_string_pretty(&self).unwrap();
         write(path, &todo_list_json)
     }
 
     /// Save all the struct in a csv file
-    pub fn save_csv(&mut self, filename: &str) -> Result<(), std::io::Error> {
+    pub fn save_csv(&self, filename: &str) -> Result<(), std::io::Error> {
         let mut content = String::new();
 
         content.push_str(&format!("{}\n", TodoItem::header_of_csv()));
-        for value in self.list.values_mut() {
+        for value in self.list.values() {
             let record = format!("{}\n", value.elem_in_csv());
             content.push_str(&record);
         }
